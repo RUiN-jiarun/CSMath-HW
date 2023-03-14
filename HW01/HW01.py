@@ -103,45 +103,58 @@ def draw_Bezier():
     plt.plot(curve2[:, 0], curve2[:, 1])
     plt.plot(points2[:, 0], points2[:, 1], 'ro:')
 
-    plt.savefig("img/b.png")
+    plt.savefig("img/b1.png")
     plt.show()
+
+def bezier_fitting(num_sample):
+    x, y = gaussian_fitting(num_sample)
+    plt.scatter(x, y, marker='o', color='none', edgecolor='blue')
+    points = np.array(list(zip(x,y)))
+    t_points = np.arange(0, 1, 0.01)
+    curve = Bezier(t_points, points).Curve()
+
+    plt.plot(curve[:, 0], curve[:, 1], color='red')
 
 if __name__ == '__main__':
-    init_plot()
-    x, y = gaussian_fitting(num_sample=100)
-    plt.scatter(x, y, marker='o', color='none', edgecolor='blue')
-    plt.savefig("img/a1.png")
-    plt.show()
+    # init_plot()
+    # x, y = gaussian_fitting(num_sample=100)
+    # plt.scatter(x, y, marker='o', color='none', edgecolor='blue')
+    # plt.savefig("img/a1.png")
+    # plt.show()
     
 
 
-    init_plot()
-    polynomial_fitting(num_sample=10, degree=3)
-    plt.savefig("img/a2.png")
-    plt.show()
+    # init_plot()
+    # polynomial_fitting(num_sample=10, degree=3)
+    # plt.savefig("img/a2.png")
+    # plt.show()
     
-    init_plot()
-    polynomial_fitting(num_sample=10, degree=9)
-    plt.savefig("img/a3.png")
-    plt.show()
-    
-
-    init_plot()
-    polynomial_fitting(num_sample=15, degree=9)
-    plt.savefig("img/a4.png")
-    plt.show()
-    
-    init_plot()
-    polynomial_fitting(num_sample=100, degree=9)
-    plt.savefig("img/a5.png")
-    plt.show()
+    # init_plot()
+    # polynomial_fitting(num_sample=10, degree=9)
+    # plt.savefig("img/a3.png")
+    # plt.show()
     
 
-    init_plot()
-    polynomial_reg_fitting(num_sample=10, degree=9, reg=np.exp(-6))
-    plt.savefig("img/a6.png")
-    plt.show()
+    # init_plot()
+    # polynomial_fitting(num_sample=15, degree=9)
+    # plt.savefig("img/a4.png")
+    # plt.show()
+    
+    # init_plot()
+    # polynomial_fitting(num_sample=100, degree=9)
+    # plt.savefig("img/a5.png")
+    # plt.show()
     
 
-    draw_Bezier()
+    # init_plot()
+    # polynomial_reg_fitting(num_sample=10, degree=9, reg=np.exp(-6))
+    # plt.savefig("img/a6.png")
+    # plt.show()
     
+
+    # draw_Bezier()
+    
+    init_plot()
+    bezier_fitting(num_sample=25)
+    plt.savefig("img/b2.png")
+    plt.show()

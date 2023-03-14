@@ -25,4 +25,7 @@
 ![](img/a6.png)
 
 ## B. Advanced Goal
-![](img/b.png)
+Bezier curve drawing with giving points results:  
+![](img/b1.png)
+Bezier curve fitting with 25 samples results:  
+![](img/b2.png)
