@@ -13,7 +13,7 @@ def PCA2(data):
 
     H = X.T @ X 
     w, U = torch.linalg.eig(H)
-    w, U = torch.tensor(w, dtype=torch.float32), torch.tensor(U, dtype=torch.float32)   # ComplexFloat to Float
+    w, U = w.clone().detach().float(), U.clone().detach().float()   # ComplexFloat to Float
     D = torch.diag(torch.sqrt(w))
     V = (torch.linalg.inv(U @ D) @ X.T).T
 
@@ -35,8 +35,8 @@ def get_focus(x, y, axv, axh):
     return focus
 
 def vis_pca2(data, x, y, axv, axh, focus):
-    plt.xlabel('First Principle Component')
-    plt.ylabel('Second Principle Component')   
+    plt.xlabel('First Principal Component')
+    plt.ylabel('Second Principal Component')   
     for v in axv:
         plt.axvline(x=v,color="grey",ls="--",lw=1)
     for h in axh:
