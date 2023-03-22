@@ -72,7 +72,7 @@ def pca(X, dims=50):
     n, d = X.shape
     X = X - torch.mean(X, 0)
 
-    l, M = torch.eig(torch.mm(X.t(), X), True)
+    l, M = torch.linalg.eig(torch.mm(X.t(), X))
     l, M = l.clone().detach().float(), M.clone().detach().float()
 
     Y = torch.mm(X, M[:, 0:dims])
