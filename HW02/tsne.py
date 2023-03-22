@@ -27,10 +27,6 @@ def pji(X, tol=1e-15, perp=30.0):
 
     for i in range(n):
 
-        # Print progress
-        if i % 500 == 0:
-            print("Computing P-values for point %d of %d..." % (i, n))
-
         # Compute the Gaussian kernel and entropy for the current precision
         # there may be something wrong with this setting None
         betamin = None
@@ -77,40 +73,18 @@ def pca(X, dims=50):
     X = X - torch.mean(X, 0)
 
     l, M = torch.eig(torch.mm(X.t(), X), True)
-    # split M real
-    # this part may be some difference for complex eigenvalue
-    # but complex eignevalue is meanless here, so they are replaced by their real part
-    i = 0
-    while i < d:
-        if l[i, 1] != 0:
-            M[:, i+1] = M[:, i]
-            i += 2
-        else:
-            i += 1
+    l, M = l.clone().detach().float(), M.clone().detach().float()
 
     Y = torch.mm(X, M[:, 0:dims])
     return Y
 
 
-def tsne(X, dims=2, initial_dims=50, perplexity=30.0):
-    """
-        Runs t-SNE on the dataset in the NxD array X to reduce its
-        dimensionality to no_dims dimensions. The syntaxis of the function is
-        `Y = tsne.tsne(X, no_dims, perplexity), where X is an NxD NumPy array.
-    """
-
-    # Check inputs
-    if isinstance(dims, float):
-        print("Error: array X should not have type float.")
-        return -1
-    if round(dims) != dims:
-        print("Error: number of dimensions should be an integer.")
-        return -1
+def tsne(X, dims=2, initial_dims=50, perp=30.0, max_iter=1000):
 
     # Initialize variables
     X = pca(X, initial_dims)
     n, d = X.shape
-    max_iter = 1000
+
     initial_momentum = 0.5
     final_momentum = 0.8
     eta = 500
@@ -121,13 +95,14 @@ def tsne(X, dims=2, initial_dims=50, perplexity=30.0):
     gains = torch.ones(n, dims)
 
     # Compute P-values
-    P = pji(X, 1e-5, perplexity)
+    P = pji(X, 1e-5, perp)
     P = P + P.t()
     P = P / torch.sum(P)
     P = P * 4.    # early exaggeration
     print("get P shape", P.shape)
     P = torch.max(P, torch.tensor([1e-21]))
 
+    loss_list = []
     # Run iterations
     for iter in range(max_iter):
 
@@ -135,7 +110,8 @@ def tsne(X, dims=2, initial_dims=50, perplexity=30.0):
         sum_Y = torch.sum(Y*Y, 1)
         num = -2. * torch.mm(Y, Y.t())
         num = 1. / (1. + torch.add(torch.add(num, sum_Y).t(), sum_Y))
-        num[range(n), range(n)] = 0.
+        # num[range(n), range(n)] = 0.
+        num[torch.eye(n, n, dtype=torch.long) == 1] = 0.
         Q = num / torch.sum(num)
         Q = torch.max(Q, torch.tensor([1e-12]))
 
@@ -156,26 +132,32 @@ def tsne(X, dims=2, initial_dims=50, perplexity=30.0):
         Y = Y + iY
         Y = Y - torch.mean(Y, 0)
 
-        # Compute current value of cost function
-        if (iter + 1) % 10 == 0:
-            C = torch.sum(P * torch.log(P / Q))
-            print("Iteration %d: error is %f" % (iter + 1, C))
+        loss = torch.sum(P * torch.log(P / Q))
+        loss_list.append(loss)
 
-        # Stop lying about P-values
+
+        if (iter + 1) % 100 == 0:
+            print("Iteration %d: loss = %f" % (iter + 1, loss))
+
+        # Stop exaggeration
         if iter == 100:
             P = P / 4.
 
+    plt.plot(loss_list)
+    plt.show()
+    plt.savefig("img/tsne_loss.png")
     # Return solution
     return Y
 
 if __name__ == '__main__':
     train_dataset = read_ori_data('data/optdigits-orig.tra')
-    data = get_data_with_label(train_dataset, 3)
+    data = get_data_with_label(train_dataset, [3])
 
     with torch.no_grad():
-        Y = tsne(data, 2, 10, 30.0)
+        Y = tsne(data, 2, 10, 30.0, 1000)
+        # Y = tsne(data, 2, 50, 20.0, 1000)
 
     axv = np.linspace(-10, 10, 5, endpoint=True)
     axh = np.linspace(-10, 10, 5, endpoint=True)
     focus = get_focus(Y[:, 0], Y[:, 1], axv, axh)
-    vis_2_comp(data, Y[:, 0], Y[:, 1], axv, axh, focus, method='tsne')
+    vis_2_comp(data, Y[:, 0], Y[:, 1], axv, axh, focus, method='tsne', plot=True)

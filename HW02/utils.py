@@ -21,7 +21,7 @@ def get_data_with_label(dataset, label):
     d = []
 
     for i in dataset:
-        if i[1] == label:
+        if i[1] in label:
             d.append(torch.unsqueeze(i[0], dim=0))
 
     for i in range(len(d)):
@@ -43,7 +43,7 @@ def get_focus(x, y, axv, axh):
             focus.append(best)
     return focus
 
-def vis_2_comp(data, x, y, axv, axh, focus, method='pca'):
+def vis_2_comp(data, x, y, axv, axh, focus, method='pca', plot=True):
     plt.xlabel('First Principal Component')
     plt.ylabel('Second Principal Component')   
     for v in axv:
@@ -55,7 +55,8 @@ def vis_2_comp(data, x, y, axv, axh, focus, method='pca'):
     
     fx, fy = [x[i] for i in focus], [y[i] for i in focus]
     plt.scatter(fx, fy, color='none', marker='o', edgecolor='red')
-    plt.savefig("img/"+method+"_scatter.png")
+    if plot:
+        plt.savefig("img/"+method+"_scatter.png")
     plt.show()
 
     padding = 2
@@ -73,5 +74,6 @@ def vis_2_comp(data, x, y, axv, axh, focus, method='pca'):
             
     plt.axis('off')
     plt.imshow(canvas)
-    plt.savefig("img/"+method+"_eigen.png")
+    if plot:
+        plt.savefig("img/"+method+"_eigen.png")
     plt.show()
