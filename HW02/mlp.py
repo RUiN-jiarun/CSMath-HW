@@ -58,11 +58,13 @@ def train(train_loader, test_loader, model, criterion, optimizer, num_epochs):
         acc_list.append(get_acc(test_loader, model))
 
     plt.plot(loss_list)
-    plt.show()
     plt.savefig("img/mlp_loss.png")
-    plt.plot(acc_list)
     plt.show()
+    
+    plt.plot(acc_list)
     plt.savefig("img/mlp_acc.png")
+    plt.show()
+    
 
 
 def get_acc(test_loader, model):

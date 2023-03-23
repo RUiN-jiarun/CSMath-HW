@@ -144,8 +144,8 @@ def tsne(X, dims=2, initial_dims=50, perp=30.0, max_iter=1000):
             P = P / 4.
 
     plt.plot(loss_list)
-    plt.show()
     plt.savefig("img/tsne_loss.png")
+    plt.show()
     # Return solution
     return Y
 
