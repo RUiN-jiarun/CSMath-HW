@@ -3,7 +3,8 @@ import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
 
-from utils import read_ori_data
+from utils import read_ori_data, get_focus, vis_2_comp
+from tsne import pca
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
@@ -107,6 +108,10 @@ def main():
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset,
                                             batch_size=batch_size,
                                             shuffle=False)
+    
+    ori_loader = torch.utils.data.DataLoader(dataset=test_dataset,
+                                            batch_size=1,
+                                            shuffle=True)
 
     # init model, loss and optimizer
     model = MLP(input_size).to(device)
@@ -119,6 +124,34 @@ def main():
 
     # save the model checkpoint
     torch.save(model.state_dict(), 'model.ckpt')
+
+    pred_three = []
+    model.eval()
+    for images, labels in ori_loader:
+        images = images.float().to(device)
+        labels = labels.to(device)
+
+        outputs = model(images)
+        _, predicted = torch.max(outputs.data, 1)
+        if predicted == 3:
+            pred_three.append(images)
+    
+    for i in range(len(pred_three)):
+        if i == 0:
+            data = pred_three[i]
+        else:
+            data = torch.cat((data, pred_three[i]), dim=0)
+    
+    data = data.clone().detach().float().cpu()
+    
+    
+    Y = pca(data, dims=2)
+    axv = np.linspace(-10, 10, 5, endpoint=True)
+    axh = np.linspace(-10, 10, 5, endpoint=True)
+    focus = get_focus(Y[:, 0], Y[:, 1], axv, axh)
+    vis_2_comp(data, Y[:, 0], Y[:, 1], axv, axh, focus, method='mlp', plot=True)
+
+
 
 if __name__ == '__main__':
     main()

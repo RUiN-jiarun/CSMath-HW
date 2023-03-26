@@ -13,9 +13,9 @@
     ![](img/mean_3.png)  
 * Visualize 2 principal components and the corresponding '3's:  
 <figure class="half">
-    <img src="img/pca2_scatter.png" width="400">
-    <img src="img/pca2_eigen.png" width="400">
-</figure>
+    <img src="img/pca_scatter.png" width="400">
+    <img src="img/pca_eigen.png" width="400">
+</figure>  
 
 ## Advanced Goal
 Apply t-SNE to all '3's and extract 2 principal components.  
@@ -25,4 +25,28 @@ The training loss curve:
 <figure class="half">
     <img src="img/tsne_scatter.png" width="400">
     <img src="img/tsne_eigen.png" width="400">
-</figure>
+</figure>  
+
+## Bonus
+Process the whole dataset in deep learning methods and visualize '3's.  
+### MLP
+I use a three-layer MLP to handle this partition task. The network architecture is very simple:  
+```python
+self.layer1 = nn.Linear(input, 512)
+self.relu1 = nn.ReLU()
+self.layer2 = nn.Linear(512, 128)
+self.relu2 = nn.ReLU()
+self.layer3 = nn.Linear(128, classes)
+self.softmax = nn.Softmax()
+```  
+The training loss curve and accuracy on testing dataset:  
+<figure class="half">
+    <img src="img/mlp_loss.png" width="400">
+    <img src="img/mlp_acc.png" width="400">
+</figure>  
+
+The visualization results:  
+<figure class="half">
+    <img src="img/mlp_scatter.png" width="400">
+    <img src="img/mlp_eigen.png" width="400">
+</figure>  
