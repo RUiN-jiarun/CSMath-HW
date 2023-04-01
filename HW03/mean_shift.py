@@ -1,7 +1,8 @@
 import numpy as np
 
 class MeanShift(object):
-    def __init__(self, kernel_bandwidth, stop_threshold, cluster_threshold):
+    def __init__(self, data, kernel_bandwidth, stop_threshold, cluster_threshold):
+        self.points = data
         self.kernel_bandwidth = kernel_bandwidth
         self.stop_threshold = stop_threshold
         self.cluster_threshold = cluster_threshold
@@ -14,10 +15,10 @@ class MeanShift(object):
     def gaussian_kernel(distance, bandwidth):
         return (1 / (bandwidth * np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((distance / bandwidth)) ** 2)
 
-    def fit(self, points):
+    def fit(self):
 
-        shift_points = np.array(points)
-        shifting = [True] * points.shape[0]
+        shift_points = np.array(self.points)
+        shifting = [True] * self.points.shape[0]
 
         while True:
             max_dist = 0
@@ -26,7 +27,7 @@ class MeanShift(object):
                 if not shifting[i]:
                     continue
                 p_shift_init = shift_points[i].copy()
-                shift_points[i] = self._shift_point(shift_points[i], points)
+                shift_points[i] = self._shift_point(shift_points[i], self.points)
                 dist = self.dist(shift_points[i], p_shift_init)
                 max_dist = max(max_dist, dist)
                 shifting[i] = dist > self.stop_threshold
@@ -35,12 +36,12 @@ class MeanShift(object):
                 break
 
         cluster_ids = self._cluster_points(shift_points.tolist())
-        return shift_points, cluster_ids
+        return cluster_ids
 
-    def _shift_point(self, point, points):
+    def _shift_point(self, point):
         shift = np.array([0., 0.])
         scale = 0.
-        for p in points:
+        for p in self.points:
             dist = self.dist(point, p)
             weight = self.gaussian_kernel(dist, self.kernel_bandwidth)
             shift += weight * p
@@ -48,12 +49,12 @@ class MeanShift(object):
         shift /= scale
         return shift
 
-    def _cluster_points(self, points):
+    def _cluster_points(self):
         cluster_ids = []
         cluster_idx = 0
         cluster_centers = []
 
-        for i, point in enumerate(points):
+        for i, point in enumerate(self.points):
             if len(cluster_ids) == 0:
                 cluster_ids.append(cluster_idx)
                 cluster_centers.append(point)
