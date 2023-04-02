@@ -34,18 +34,19 @@ class EM(object):
         sigma_estimate_sum = [0 for i in range(ndim)]
         sigma_estimate = [0 for i in range(ndim)]
         n_estimate = np.sum(p_estimate, axis=1)
-        p_sample_estimate = n_estimate / n_samples # Mixture density we obtain from EM
+
         for i in range(ndim):
             for j in range(n_samples):
                 mu_estimate_sum[i] += p_estimate[i][j] * self.data[j]
-            mu_estimate[i] = mu_estimate_sum[i] / n_estimate[i] # Mu we obtain from EM
+            mu_estimate[i] = mu_estimate_sum[i] / n_estimate[i]     # mean
+
         for i in range(ndim):
             sigma_estimate_sum[i] = np.zeros(shape=(2,2))
             for j in range(n_samples):
                 sigma_estimate_sum[i] += p_estimate[i][j] * np.dot((self.data[j] - mu_estimate[i]).reshape(-1,1), (self.data[j] - mu_estimate[i]).reshape(1,-1))
             sigma_estimate[i] = sigma_estimate_sum[i] / n_estimate[i]
 
-        return p_sample_estimate, mu_estimate, sigma_estimate
+        return mu_estimate, sigma_estimate
     
     def EM(self):
         
@@ -54,11 +55,7 @@ class EM(object):
         p_estimate = np.zeros(shape=(self.ndim, n_samples))
 
         for i in range(self.max_iter):
-            ells = [patches.Ellipse(
-                xy = self.mu[j], 
-                width = 6 * np.sqrt(self.sigma[j][0][0]), 
-                height = 6 * np.sqrt(self.sigma[j][1][1])
-            ) for j in range(self.ndim)]
+            ells = [patches.Ellipse(xy = self.mu[j], width = 6 * np.sqrt(self.sigma[j][0][0]), height = 6 * np.sqrt(self.sigma[j][1][1])) for j in range(self.ndim)]
             fig = plt.figure(1, figsize=(18,10))
             ax = fig.add_subplot(1,1,1)
             ax.set_title('Iteration: {}'.format(i+1))
@@ -75,8 +72,9 @@ class EM(object):
             # plt.savefig('EM_iterations_ndim4.png')
             
             p_estimate = self.E()
+            # update
             old_mu = self.mu
-            p_sample, self.mu, self.sigma = self.M(p_estimate=p_estimate)
+            self.mu, self.sigma = self.M(p_estimate=p_estimate)
 
             loss = np.sum(np.sum(np.abs(np.array(old_mu) - np.array(self.mu))))
             print("Iterations: ", i+1, ", Loss: ", loss)

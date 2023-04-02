@@ -16,14 +16,14 @@ class MeanShift(object):
         return (1 / (bandwidth * np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((distance / bandwidth)) ** 2)
 
     def fit(self):
-
         shift_points = np.array(self.points)
         shifting = [True] * self.points.shape[0]
 
         while True:
             max_dist = 0
             for i in range(0, len(shift_points)):
-                print(i + 1, '/', len(shift_points), 'max_dist:', max_dist)
+                if (i + 1) % 300 == 0:
+                    print(i + 1, '/', len(shift_points), 'max_dist:', max_dist)
                 if not shifting[i]:
                     continue
                 p_shift_init = shift_points[i].copy()
@@ -38,10 +38,10 @@ class MeanShift(object):
         cluster_ids = self._cluster_points(shift_points.tolist())
         return cluster_ids
 
-    def _shift_point(self, point):
+    def _shift_point(self, point, shift_points):
         shift = np.array([0., 0.])
         scale = 0.
-        for p in self.points:
+        for p in shift_points:
             dist = self.dist(point, p)
             weight = self.gaussian_kernel(dist, self.kernel_bandwidth)
             shift += weight * p
@@ -49,12 +49,12 @@ class MeanShift(object):
         shift /= scale
         return shift
 
-    def _cluster_points(self):
+    def _cluster_points(self, shift_points):
         cluster_ids = []
         cluster_idx = 0
         cluster_centers = []
 
-        for i, point in enumerate(self.points):
+        for i, point in enumerate(shift_points):
             if len(cluster_ids) == 0:
                 cluster_ids.append(cluster_idx)
                 cluster_centers.append(point)

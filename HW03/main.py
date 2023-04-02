@@ -37,7 +37,7 @@ if __name__ == '__main__':
     points = np.concatenate(data, axis=0)
 
     # Mean Shift
-    ms = MeanShift(0.5, 1e-2, 1e-1)      
+    ms = MeanShift(points, 0.5, 1e-2, 1e-1)      
     cluster = ms.fit()
     color = ['red', 'green', 'blue', 'cyan', 'yellow', 'gray', ]
     for i, p in enumerate(points):
