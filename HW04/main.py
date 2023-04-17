@@ -2,17 +2,12 @@ import matplotlib.pyplot as plt
 import torch
 from leven_marq import LM
 
-gauss_term = lambda t, mu, sigma: torch.exp(-.5 * (t-mu)**2 / sigma**2)
-asymm_term = lambda t, mu, sigma, eta: 1 + torch.erf(eta * (t-mu) / (sigma * 2**.5))
-
-erf_term = lambda t, mu, sigma, eta: torch.exp(-.5*((t-mu)**2/ sigma**2) * eta**2)
-pd_asymm_wrt_mu = lambda t, mu, sigma, eta: erf_term(t, mu, sigma, eta) * -1 * (2/torch.pi)**.5 * eta/sigma
-pd_asymm_wrt_sigma = lambda t, mu, sigma, eta: erf_term(t, mu, sigma, eta) * -1 * (2/torch.pi)**.5 * eta*(t-mu)/sigma**2
-pd_asymm_wrt_eta = lambda t, mu, sigma, eta: erf_term(t, mu, sigma, eta) * (2/torch.pi)**.5 * (t-mu)/sigma
 
 def emg_model(p, t: torch.Tensor = None):
 
     alpha, mu, sigma, eta = p
+    gauss_term = lambda t, mu, sigma: torch.exp(-0.5 * (t-mu)**2 / sigma**2)
+    asymm_term = lambda t, mu, sigma, eta: 1 + torch.erf(eta * (t-mu) / (sigma * 2**0.5))
 
     alpha = 1 if alpha is None else alpha
     gauss = gauss_term(t, mu, sigma)
@@ -35,7 +30,7 @@ t = torch.linspace(-1e2, 1e2, int(2e2)).to(device)
 data = emg_model(gt_params, t)
 data_raw = data + 0.001 * torch.randn(len(data), dtype=torch.float64, device=device)
 
-coeffs = LM(p=init_params, function=cost_fun, args=(t, data_raw))
+coeffs = LM(p=init_params, function=cost_fun, data=(t, data_raw))
 
 ret_params = torch.allclose(coeffs[-1], gt_params, atol=1e-1)
 print('total iters: ', len(coeffs))
@@ -49,12 +44,14 @@ plt.plot(eps_list)
 plt.title('Loss curve')
 plt.ylabel('epsilon')
 plt.xlabel('iters') 
+plt.savefig('img/loss.png')
 plt.show()
 
 dot = plt.scatter(t.cpu(), data_raw.cpu(), s=0.2)
 l1, = plt.plot(data.detach().cpu(), color='blue')
 l2, = plt.plot(emg_model(coeffs[-1], t).detach().cpu(), 'r:')
 plt.legend(handles=[dot, l1, l2], labels=['data_raw','gt_function', 'estimate_function'], loc='upper left')
+plt.savefig('img/func.png')
 plt.show()
 
 
