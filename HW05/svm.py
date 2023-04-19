@@ -1,8 +1,5 @@
 import numpy as np
-from numpy import linalg
 import cvxopt
-import cvxopt.solvers
-
 
 # define kenrel functions
 def linear_kernel(x1, x2):
@@ -14,22 +11,18 @@ def polynomial_kernel(x, y, p=3):
 
 
 def gaussian_kernel(x, y, sigma=5.0):
-    return np.exp(-linalg.norm(x - y) ** 2 / (2 * (sigma ** 2)))
+    return np.exp(-np.linalg.norm(x - y) ** 2 / (2 * (sigma ** 2)))
 
 
 class SVM(object):
     """
-    Suppoet vector classification by quadratic programming
+    SVM w/ QP
     """
 
-    def __init__(self, kernel='linear', C=None):
-        """
-        :param kernel: kernel types, should be in the kernel function list above
-        :param C:
-        """
+    def __init__(self, kernel='linear', C=1):
         if kernel == 'linear':
             self.kernel = linear_kernel
-        elif kernel == 'poly':
+        elif kernel == 'polynomial':
             self.kernel = polynomial_kernel
         elif kernel == 'gaussian':
             self.kernel = gaussian_kernel
@@ -54,18 +47,15 @@ class SVM(object):
         A = cvxopt.matrix(y.astype('double'), (1, n_samples))
         b = cvxopt.matrix(0.0)
 
-        if self.C is None:
-            G = cvxopt.matrix(np.diag(np.ones(n_samples) * -1))
-            h = cvxopt.matrix(np.zeros(n_samples))
-        else:
-            tmp1 = np.diag(np.ones(n_samples) * -1)
-            tmp2 = np.identity(n_samples)
-            G = cvxopt.matrix(np.vstack((tmp1, tmp2)))
-            tmp1 = np.zeros(n_samples)
-            tmp2 = np.ones(n_samples) * self.C
-            h = cvxopt.matrix(np.hstack((tmp1, tmp2)))
+        tmp1 = np.diag(np.ones(n_samples) * -1)
+        tmp2 = np.identity(n_samples)
+        G = cvxopt.matrix(np.vstack((tmp1, tmp2)))
 
-        # solve QP problem using cvxopt lib
+        tmp1 = np.zeros(n_samples)
+        tmp2 = np.ones(n_samples) * self.C
+        h = cvxopt.matrix(np.hstack((tmp1, tmp2)))
+
+        # Solve QP problem using cvxopt lib
         solution = cvxopt.solvers.qp(P, q, G, h, A, b)
 
         # Lagrange multipliers
@@ -86,7 +76,7 @@ class SVM(object):
             self.b -= np.sum(self.a * self.sv_y * K[ind[n], sv])
         self.b /= len(self.a)
 
-        # Weight vector
+        # Weight vector for linear kernel
         if self.kernel == linear_kernel:
             self.w = np.zeros(n_features)
             for n in range(len(self.a)):

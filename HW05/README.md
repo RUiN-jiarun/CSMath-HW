@@ -24,3 +24,13 @@ Implement the SVM algorithm
 ## References
 + http://cvxopt.org
 + http://www.csie.ntu.edu.tw/~cjlin/libsvm/
+
+## Results
+1. Original Data  
+![](img/data.png)  
+2. SVM w/ linear kernel  
+![](img/linear.png  )
+3. SVM w/ polynomial kernel  
+![](img/polynomial.png  )
+4. SVM w/ gaussian kernel  
+![](img/gaussian.png  )
