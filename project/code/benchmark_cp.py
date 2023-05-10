@@ -58,6 +58,8 @@ def test_speed_3ord():
                  init='random', n_iter_max=500, tol=1e-5, normalize_factors=True)  
 
 def valid_3ord():
+    """Decomposition on 3 order tensors.
+    """
     print('\nCorrectness benchmark for 3 order tensor CP decomposition.\n')
     
     shape = (2, 3, 4)
@@ -66,8 +68,8 @@ def valid_3ord():
     norm_errors = 0
     for _ in range(max_iter):
         tensor = np.random.randn(2, 3, 4)
-        factors, lamda = cp.cp(tensor, r=3, stop_iter=500, tol=1e-5, normalize_factor=True)
-        rec_tensor = cp.reconstruct_cp(factors, lamda, shape)
+        factors, _lambda = cp.cp(tensor, r=3, stop_iter=500, tol=1e-5, normalize_factor=True)
+        rec_tensor = cp.reconstruct_cp(factors, _lambda, shape)
         norm_error = np.linalg.norm(rec_tensor - tensor) / np.linalg.norm(tensor)
         norm_errors += norm_error
     print(f'error ({norm_errors/max_iter})')

@@ -166,7 +166,7 @@ VM分解虽然放宽了CP分解的约束，同时发明了一种符合三维场�
 \end{figure}
 
 
-\section{辐射场应用与原理分析}
+\section{辐射场应用与实验分析}
 \label{sec:analysis}
 
 \subsection{张量辐射场}
@@ -222,8 +222,34 @@ VM分解由于将二者成分进行了耦合，因此实际比例是固定的。
 
 除此之外，基于HY分解的张量辐射场还可以通过分解成分的秩的残差来进行场景压缩与组合。参考SVD分解的原理，秩越低，分解越紧凑，成分所表达的信息越重要。这也是诸如PCA等降维方法的重要原理。假设总共的分解得到$R$个秩，训练阶段数量为$M$，可以将所有的秩成分按序列分到$M$个组当中，记每个组的秩数量为$R_m$，$m\in\{1,2,...,M\}$。在训练过程中，每一次收敛后对秩成分进行固定并附加下一个秩残差项$R_m-R_{m-1}$。通过对秩残差损失的监督，我们可以更快学习到每一个组分对于基本组分的补充信息，从而在很小的模型容量的情况下获得很高的视觉质量。在实践中，这对于LOD（Level-of-Details）的设置有着很重要的效果，能够根据场景的复杂程度以及重要程度进行高保真压缩。
 
-\subsection{实验与原理分析}
-本文除了在几个经典数据集上测试了TensoRF外，还手动利用numpy实现了基础的CP分解作为原理分析的练习。
+\subsection{实验与分析}
+我们首先以numpy为后端实现了基础的CP分解作为原理分析的练习，并与经典的张量学习库tensorly的结果进行了对比。我们用一个简单的任务来进行CP分解的性能比较。CP分解的求解用到的是交替优化方法ALS，对于每个因子矩阵相关的子问题，则使用共轭梯度法求解。模拟三阶CP分解以及在维度为$(2,3,4)$的三维张量上进行分解与重建精度对比的实验结果如表\ref{tab:1}所示。
+
+\begin{table}[h]
+	\centering
+	\begin{tabular}{ccccc}
+		\hline\hline\noalign{\smallskip}	
+		Backend & iters & total time(s) & avg time(s) & error  \\
+		\noalign{\smallskip}\hline\noalign{\smallskip}
+		numpy & 30 & 3.08016 & 0.10267 & 0.18030  \\
+		tensorly & 30 & 5.28228 & 0.17608 & 0.16475  \\
+		\noalign{\smallskip}\hline
+	\end{tabular}
+  \caption{CP分解实验结果}
+	\label{tab:1}  
+\end{table}
+
+
+另外，我们根据TensoRF提供的基于VM分解的NeRF代码与原始NeRF的代码进行了运行对比，实验证明张量辐射场的训练和推理时间都有极大的提升，同时建模质量也有了很大的提升。重建效果与深度可视化如图\ref{fig:res}所示。
+
+从CP分解的实验中可以看出，通过CP分解与重建后张量损失很小，在小规模张量的分解，每次迭代求解只需要大约0.1s。将辐射场进行张量化，利用分量因子进行特征表示与重建，既在体素网格的框架下对目标场景进行了显式特征存储，减少了训练和推理时间，又能够保证很小的几何形体损失，这也说明了这一方法具有非常好的可扩展性。
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=1.0\linewidth]{fig/res.png}
+  \caption{TensoRF在blender synthetic数据集上的重建效果。每个模型训练时间大约为10~13分钟。}
+  \label{fig:res}
+\end{figure}
 
 
 \section{总结与展望}
